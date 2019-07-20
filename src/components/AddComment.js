@@ -1,8 +1,10 @@
 import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { addComment } from '../store/actions/posts'
 import {
-    StyleSheet,
     View,
     Text,
+    StyleSheet,
     TextInput,
     TouchableWithoutFeedback as TWF,
     Alert
@@ -16,21 +18,29 @@ class AddComment extends Component {
     }
 
     handleAddComment = () => {
-        Alert.alert('Adicionado!', this.state.comment)
+        this.props.onAddComment({
+            postId: this.props.postId,
+            comment: {
+                nickname: this.props.name,
+                comment: this.state.comment
+            }
+        })
+
+        this.setState({ comment: '', editMode: false })
     }
 
     render() {
         let commentArea = null
-        if(this.state.editMode) {
+        if (this.state.editMode) {
             commentArea = (
                 <View style={styles.container}>
-                    <TextInput placeholder='Comment...' 
-                    style={styles.input} 
-                    value={this.state.comment}
-                    onChangeText={comment => this.setState({ comment })}
-                    onSubmitEditing={this.handleAddComment} />
+                    <TextInput placeholder='Pode comentar...'
+                        style={styles.input} autoFocus={true}
+                        value={this.state.comment}
+                        onChangeText={comment => this.setState({ comment })}
+                        onSubmitEditing={this.handleAddComment} />
                     <TWF onPress={() => this.setState({ editMode: false })}>
-                        <Icon name='times' size={15} color='#555'/>
+                        <Icon name='times' size={15} color='#555' />
                     </TWF>
                 </View>
             )
@@ -38,13 +48,12 @@ class AddComment extends Component {
             commentArea = (
                 <TWF onPress={() => this.setState({ editMode: true })}>
                     <View style={styles.container}>
-                        <Icon name='comment-o' size={25} color='#555'/>
+                        <Icon name='comment-o' size={25} color='#555' />
                         <Text style={styles.caption}>
-                            Adicione um comentário
+                            Adicione um comentário...
                         </Text>
                     </View>
                 </TWF>
-                
             )
         }
 
@@ -73,4 +82,16 @@ const styles = StyleSheet.create({
     }
 })
 
-export default AddComment
+const mapStateToProps = ({ user }) => {
+    return {
+        name: user.name
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+        onAddComment: payload => dispatch(addComment(payload))
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(AddComment)
